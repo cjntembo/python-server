@@ -1,11 +1,9 @@
 class Employee():
 
-    def __init__(self, id, name, locationId, manager, fullTime, hourlyRate):
+    def __init__(self, id, name, address, location_id):
       self.id = id
       self.name = name
-      self.locationId = locationId
-      self.manager = manager
-      self.fullTime = fullTime
-      self.hourlyRate = hourlyRate
+      self.address = address
+      self.location_id = location_id
 
-new_employee = Employee(1, "Steve", 1, "no", "yes", "19.23")
+new_employee = Employee(1, "Steve", "999 street", 1)

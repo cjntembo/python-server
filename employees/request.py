@@ -1,67 +1,126 @@
+import sqlite3
+import json
+
+from models import Employee
+
+
 EMPLOYEES = [
     {
       "id": 2,
       "name": "Sarah Smith",
-      "locationId": 1,
-      "manager": "yes",
-      "fullTime": "yes",
-      "hourlyRate": "17.95"
+      "location_id": 1,
+      "address": "111 street"
     },
     {
       "id": 3,
       "name": "Mathew Johns",
-      "locationId": 1,
-      "manager": "no",
-      "fullTime": "no",
-      "hourlyRate": "11.50"
+      "location_id": 1,
+      "address": "222 street"
     },
     {
       "id": 4,
       "name": "Caroline Dubey",
-      "locationId": 2,
-      "manager": "no",
-      "fullTime": "yes",
-      "hourlyRate": "12.80"
+      "location_id": 2,
+      "address": "333 street"
     },
     {
       "name": "joker",
-      "locationId": 1,
-      "manager": "no",
-      "fullTime": "no",
-      "hourlyRate": "11.50",
+      "location_id": 1,
+      "address": "444 street",
       "id": 5
     },
     {
       "name": "Johnny Dash",
-      "locationId": 1,
-      "manager": "no",
-      "fullTime": "no",
-      "hourlyRate": "11.50",
+      "location_id": 1,
+      "address": "555 street",
       "id": 6
     },
     {
       "name": "Carter",
-      "locationId": 1,
-      "manager": "true",
-      "fullTime": "no",
-      "hourlyRate": "11.55",
+      "location_id": 1,
+      "address": "666 street",
       "id": 7
     }
   ]
 
 
-def get_all_employees():
-    return EMPLOYEES
+# def get_all_employees():
+#     return EMPLOYEES
 
+def get_all_employees():
+    # Open a connection to the database
+    with sqlite3.connect("./kennel.db") as conn:
+
+        # Just use these. It's a Black Box.
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        SELECT
+            e.id,
+            e.name,
+            e.address,
+            e.location_id
+        FROM employee e
+        """)
+
+        # Initialize an empty list to hold all employee representations
+        employees = []
+
+        # Convert rows of data into a Python list
+        dataset = db_cursor.fetchall()
+
+        # Iterate list of data returned from database
+        for row in dataset:
+
+            # Create an employee instance from the current row.
+            # Note that the database fields are specified in
+            # exact order of the parameters defined in the
+            # Employee class above.
+            employee = Employee(row['id'], row['name'], row['address'],
+                            row['location_id'])
+
+            employees.append(employee.__dict__)
+
+    # Use `json` package to properly serialize list as JSON
+    return json.dumps(employees)
+
+
+# def get_single_employee(id):
+#     requested_employee = None
+
+#     for employee in EMPLOYEES:
+#         if employee["id"] == id:
+#             requested_employee = employee
+
+#     return requested_employee
 
 def get_single_employee(id):
-    requested_employee = None
+    with sqlite3.connect("./kennel.db") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
 
-    for employee in EMPLOYEES:
-        if employee["id"] == id:
-            requested_employee = employee
+        # Use a ? parameter to inject a variable's value
+        # into the SQL statement.
+        db_cursor.execute("""
+        SELECT
+            e.id,
+            e.name,
+            e.address,
+            e.location_id
+        FROM employee e
+        WHERE e.id = ?
+        """, ( id, ))
 
-    return requested_employee
+        # Load the single result into memory
+        data = db_cursor.fetchone()
+
+        # Create an employee instance from the current row
+        employee = Employee(data['id'], data['name'], data['address'],
+                            data['location_id'])
+
+        return json.dumps(employee.__dict__)
 
 
 def create_employee(employee):
