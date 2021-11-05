@@ -1,7 +1,9 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from animals import (
     get_all_animals, 
-    get_single_animal, 
+    get_single_animal,
+    get_animals_by_location,
+    get_animals_by_status,
     create_animal, 
     delete_animal, 
     update_animal
@@ -15,7 +17,8 @@ from locations import (
 )
 from employees import (
     get_all_employees, 
-    get_single_employee, 
+    get_single_employee,
+    get_employees_by_location_id, 
     create_employee, 
     delete_employee,
     update_employee
@@ -170,6 +173,16 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = f"{get_single_customer(id)}"
                 else:
                     response = f"{get_all_customers()}"
+            elif resource == "employees":
+                if id is not None:
+                    response = f"{get_single_employee(id)}"
+                else:
+                    response = f"{get_all_employees()}"
+            elif resource == "locations":
+                if id is None:
+                    response = f"{get_single_location(id)}"
+                else:
+                    response = f"{get_all_locations()}"
 
         # Response from parse_url() is a tuple with 3
         # items in it, which means the request was for
@@ -182,6 +195,12 @@ class HandleRequests(BaseHTTPRequestHandler):
             # email as a filtering value?
             if key == "email" and resource == "customers":
                 response = get_customers_by_email(value)
+            elif key == "location_id" and resource == "animals":
+                response = get_animals_by_location(value)
+            elif key == "location_id" and resource == "employees":
+                response = get_employees_by_location_id(value)
+            elif key == "status" and resource == "animals":
+                response = get_animals_by_status(value)
 
         self.wfile.write(response.encode())
 
