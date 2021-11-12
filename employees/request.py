@@ -168,27 +168,60 @@ def create_employee(employee):
     return employee
 
 
+# def delete_employee(id):
+#     # Initial -1 value for employee index, in case one isn't found
+#     employee_index = -1
+
+#     # Iterate the EMPLOYEES list, but use enumerate() so that you
+#     # can access the index value of each item
+#     for index, employee in enumerate(EMPLOYEES):
+#         if employee["id"] == id:
+#             # Found the employee. Store the current index.
+#             employee_index = index
+
+#     # If the employee was found, use pop(int) to remove it from list
+#     if employee_index >= 0:
+#         EMPLOYEES.pop(employee_index)
 def delete_employee(id):
-    # Initial -1 value for employee index, in case one isn't found
-    employee_index = -1
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
 
-    # Iterate the EMPLOYEES list, but use enumerate() so that you
-    # can access the index value of each item
-    for index, employee in enumerate(EMPLOYEES):
-        if employee["id"] == id:
-            # Found the employee. Store the current index.
-            employee_index = index
-
-    # If the employee was found, use pop(int) to remove it from list
-    if employee_index >= 0:
-        EMPLOYEES.pop(employee_index)
+        db_cursor.execute("""
+        DELETE FROM employee
+        WHERE id = ?
+        """, (id, ))
 
 
+# def update_employee(id, new_employee):
+#     # Iterate the EMPLOYEES list, but use enumerate() so that
+#     # you can access the index value of each item.
+#     for index, employee in enumerate(EMPLOYEES):
+#         if employee["id"] == id:
+#             # Found the employee. Update the value.
+#             EMPLOYEES[index] = new_employee
+#             break
 def update_employee(id, new_employee):
-    # Iterate the EMPLOYEES list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, employee in enumerate(EMPLOYEES):
-        if employee["id"] == id:
-            # Found the employee. Update the value.
-            EMPLOYEES[index] = new_employee
-            break
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Employee
+            SET
+                name = ?,
+                address = ?,
+                location_id = ?
+        WHERE id = ?
+        """, (new_employee['name'],
+              new_employee['address'], new_employee['location_id'],
+              id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
